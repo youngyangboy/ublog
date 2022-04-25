@@ -54,6 +54,27 @@ public class ArticleServiceImpl implements ArticleService {
 
     }
 
+
+    /**
+     * 最热文章
+     * @param limit
+     * @return
+     */
+    @Override
+    public Result hotArticle(int limit) {
+
+
+        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.orderByDesc(Article::getViewCounts);
+        queryWrapper.select(Article::getAuthorId, Article::getTitle);
+        queryWrapper.last("limit " + limit);
+        // select id,title from article order by viewCount desc limit 5;
+        List<Article> articles = articleMapper.selectList(queryWrapper);
+
+        //返回articleVo列表，不需要tag和author
+        return Result.success(copyList(articles,false,false));
+    }
+
     /**
      * 下面两个方法的功能是根据是否需要Tag和Author将Article对象转换成前端需要的ArticleVo对象
      *
@@ -85,4 +106,6 @@ public class ArticleServiceImpl implements ArticleService {
         }
         return articleVo;
     }
+
+
 }
