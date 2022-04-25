@@ -29,7 +29,7 @@ public class LoginServiceImpl implements LoginService {
     private RedisTemplate<String, String> redisTemplate;
 
 
-    private static final String salt = "ubook!#";
+    private static final String salt = "mszlu!@#";
 
     @Override
     public Result login(LoginParam loginParam) {
@@ -85,4 +85,11 @@ public class LoginServiceImpl implements LoginService {
 
         return sysUser;
     }
+
+    @Override
+    public Result logout(String token) {
+        redisTemplate.delete("TOKEN_"+token);
+        return Result.success(null);
+    }
+
 }
