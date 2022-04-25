@@ -15,10 +15,13 @@ public class SysUserServiceImpl implements SysUserService {
     @Resource
     private SysUserMapper sysUserMapper;
 
+    /**
+     * 通过id找到SysUser对象信息
+     * @param id
+     * @return
+     */
     @Override
     public SysUser findUserById(Long id) {
-
-
         SysUser sysUser = sysUserMapper.selectById(id);
         if (sysUser == null) {
             sysUser = new SysUser();
