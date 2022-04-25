@@ -8,13 +8,14 @@ import website.ubook.dao.pojo.Tag;
 import website.ubook.service.TagService;
 import website.ubook.vo.TagVo;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class TagServiceImpl implements TagService {
 
-    @Autowired
+    @Resource
     private TagMapper tagMapper;
 
     public TagVo copy(Tag tag){

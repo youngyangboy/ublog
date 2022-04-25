@@ -4,11 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import website.ubook.dao.mapper.ArticleMapper;
 import website.ubook.dao.pojo.Article;
 import website.ubook.service.ArticleService;
+import website.ubook.service.SysUserService;
+import website.ubook.service.TagService;
 import website.ubook.vo.ArticleVo;
 import website.ubook.vo.Result;
 import website.ubook.vo.params.PageParams;
@@ -23,6 +24,12 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Resource
     private ArticleMapper articleMapper;
+
+    @Resource
+    private TagService tagService;
+
+    @Resource
+    private SysUserService sysUserService;
 
     /**
      * 分页查询article数据库
@@ -42,17 +49,17 @@ public class ArticleServiceImpl implements ArticleService {
         queryWrapper.orderByDesc(Article::getWeight,Article::getCreateDate);
         List<Article> records = articleMapper.selectPage(page, queryWrapper).getRecords();
 
-        List<ArticleVo> articleVoList = copyList(records);
+        List<ArticleVo> articleVoList = copyList(records,true,true);
 
         return Result.success(articleVoList);
 
     }
 
 
-    private List<ArticleVo> copyList(List<Article> records) {
+    private List<ArticleVo> copyList(List<Article> records, boolean isTag, boolean isAuthor) {
         List<ArticleVo> articleVoList = new ArrayList<>();
         for (Article record : records) {
-            articleVoList.add(copy(record));
+            articleVoList.add(copy(record,isTag,isAuthor));
         }
         return articleVoList;
     }
@@ -64,13 +71,14 @@ public class ArticleServiceImpl implements ArticleService {
 
         //并不是所有的接口都需要【标签】、【作者】
         if (isTag == true) {
-            Long id = article.getId();
+            Long articleId = article.getId();
 
-            articleVo.setTags();
+            articleVo.setTags(tagService.findTagByArticleId(articleId));
         }
 
         if (isAuthor == true) {
-            articleVo.setAuthor();
+            Long authorId = article.getAuthorId();
+            articleVo.setAuthor(sysUserService.findUserById(authorId).getNickname());
         }
         return articleVo;
     }

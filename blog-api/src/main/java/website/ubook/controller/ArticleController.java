@@ -10,11 +10,13 @@ import website.ubook.service.ArticleService;
 import website.ubook.vo.Result;
 import website.ubook.vo.params.PageParams;
 
+import javax.annotation.Resource;
+
 @RestController
 @RequestMapping("articles")
 public class ArticleController {
 
-    @Autowired
+    @Resource
     private ArticleService articleService;
 
     /**
