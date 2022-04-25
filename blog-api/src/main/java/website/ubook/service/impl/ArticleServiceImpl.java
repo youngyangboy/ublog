@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import website.ubook.dao.dos.Archives;
 import website.ubook.dao.mapper.ArticleMapper;
 import website.ubook.dao.pojo.Article;
 import website.ubook.service.ArticleService;
@@ -93,6 +94,13 @@ public class ArticleServiceImpl implements ArticleService {
 
         //返回articleVo列表，不需要tag和author
         return Result.success(copyList(articles,false,false));
+    }
+
+    @Override
+    public Result listArchives() {
+        List<Archives> archivesList = articleMapper.listArchives();
+
+        return Result.success(archivesList);
     }
 
     /**
