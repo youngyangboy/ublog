@@ -1,5 +1,6 @@
 package website.ubook.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import website.ubook.dao.mapper.SysUserMapper;
@@ -17,6 +18,7 @@ public class SysUserServiceImpl implements SysUserService {
 
     /**
      * 通过id找到SysUser对象信息
+     *
      * @param id
      * @return
      */
@@ -28,5 +30,16 @@ public class SysUserServiceImpl implements SysUserService {
             sysUser.setNickname("None");
         }
         return sysUser;
+    }
+
+    @Override
+    public SysUser findUser(String account, String password) {
+
+        LambdaQueryWrapper<SysUser> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SysUser::getAccount, account);
+        queryWrapper.eq(SysUser::getPassword, password);
+        queryWrapper.select(SysUser::getAccount, SysUser::getId, SysUser::getAvatar, SysUser::getNickname);
+        queryWrapper.last("limit 1");
+        return sysUserMapper.selectOne(queryWrapper);
     }
 }
