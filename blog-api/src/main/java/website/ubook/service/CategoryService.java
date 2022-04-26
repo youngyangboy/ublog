@@ -1,6 +1,7 @@
 package website.ubook.service;
 
 import website.ubook.vo.CategoryVo;
+import website.ubook.vo.Result;
 
 import java.util.List;
 
@@ -12,4 +13,5 @@ public interface CategoryService {
      */
     CategoryVo findCategoryById(Long categoryId);
 
+    Result findAll();
 }
