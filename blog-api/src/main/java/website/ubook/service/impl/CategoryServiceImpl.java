@@ -10,6 +10,7 @@ import website.ubook.service.CategoryService;
 import website.ubook.vo.CategoryVo;
 import website.ubook.vo.Result;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +18,7 @@ import java.util.List;
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
-    @Autowired
+    @Resource
     private CategoryMapper categoryMapper;
 
     @Override

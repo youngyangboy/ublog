@@ -2,6 +2,7 @@ package website.ubook.service;
 
 
 import website.ubook.vo.Result;
+import website.ubook.vo.params.ArticleParam;
 import website.ubook.vo.params.PageParams;
 
 
@@ -42,4 +43,12 @@ public interface ArticleService {
      * @return
      */
     Result findArticleById(Long articleId);
+
+
+    /**
+     * 文章发布
+     * @param articleParam
+     * @return
+     */
+    Result publish(ArticleParam articleParam);
 }

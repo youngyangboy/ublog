@@ -10,4 +10,10 @@ public interface TagService {
 
     Result hots(int limit);
 
+    /**
+     * 查询所有的文章标签
+     * @return
+     */
+    Result findAll();
+
 }

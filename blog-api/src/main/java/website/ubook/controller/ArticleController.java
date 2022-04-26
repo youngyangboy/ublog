@@ -3,6 +3,7 @@ package website.ubook.controller;
 import org.springframework.web.bind.annotation.*;
 import website.ubook.service.ArticleService;
 import website.ubook.vo.Result;
+import website.ubook.vo.params.ArticleParam;
 import website.ubook.vo.params.PageParams;
 
 import javax.annotation.Resource;
@@ -61,5 +62,10 @@ public class ArticleController {
     public Result findArticleById(@PathVariable("id") Long articleId) {
         return articleService.findArticleById(articleId);
 
+    }
+
+    @PostMapping("publish")
+    public Result publish(@RequestBody ArticleParam articleParam){
+        return articleService.publish(articleParam);
     }
 }

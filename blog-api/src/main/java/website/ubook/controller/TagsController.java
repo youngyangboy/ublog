@@ -7,17 +7,24 @@ import org.springframework.web.bind.annotation.RestController;
 import website.ubook.service.TagService;
 import website.ubook.vo.Result;
 
+import javax.annotation.Resource;
+
 @RestController
 @RequestMapping("tags")
 public class TagsController {
 
-    @Autowired
+    @Resource
     private TagService tagService;
 
     @GetMapping("hot")
     public Result hot() {
         int limit = 6;
         return tagService.hots(limit);
+    }
+
+    @GetMapping()
+    public Result findAll() {
+        return tagService.findAll();
     }
 
 }

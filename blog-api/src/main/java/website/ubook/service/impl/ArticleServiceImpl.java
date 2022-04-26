@@ -5,19 +5,27 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import website.ubook.dao.dos.Archives;
 import website.ubook.dao.mapper.ArticleBodyMapper;
 import website.ubook.dao.mapper.ArticleMapper;
+import website.ubook.dao.mapper.ArticleTagMapper;
 import website.ubook.dao.pojo.Article;
 import website.ubook.dao.pojo.ArticleBody;
+import website.ubook.dao.pojo.ArticleTag;
+import website.ubook.dao.pojo.SysUser;
 import website.ubook.service.*;
+import website.ubook.utils.UserThreadLocal;
 import website.ubook.vo.ArticleBodyVo;
 import website.ubook.vo.ArticleVo;
 import website.ubook.vo.Result;
+import website.ubook.vo.TagVo;
+import website.ubook.vo.params.ArticleParam;
 import website.ubook.vo.params.PageParams;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -41,6 +49,9 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Resource
     private ThreadService threadService;
+
+    @Resource
+    private ArticleTagMapper articleTagMapper;
 
     /**
      * 分页查询article数据库，返回ArticleVo列表对象，封装在Result中
@@ -134,11 +145,110 @@ public class ArticleServiceImpl implements ArticleService {
         2. 更新增加了此次接口的耗时，如果一旦更新出问题，不能影响查看文章的操作
         解决方法：可以使用线程池，把更新操作扔到线程池中去执行，这样就和主线程不相关了
          */
-        threadService.updateArticleViewCount(articleMapper,article);
+        threadService.updateArticleViewCount(articleMapper, article);
 
         return Result.success(articleVo);
     }
 
+    /**
+     * 文章发布
+     *
+     * @param articleParam
+     * @return
+     */
+//    @Transactional
+//    public Result publish(ArticleParam articleParam) {
+//        SysUser sysUser = UserThreadLocal.get();
+//
+//        Article article = new Article();
+//        article.setAuthorId(sysUser.getId());
+//        article.setCategoryId(articleParam.getCategory().getId());
+//        article.setCreateDate(System.currentTimeMillis());
+//        article.setCommentCounts(0);
+//        article.setSummary(articleParam.getSummary());
+//        article.setTitle(articleParam.getTitle());
+//        article.setViewCounts(0);
+//        article.setWeight(Article.Article_Common);
+//        article.setBodyId(-1L);
+//        this.articleMapper.insert(article);
+//
+//        //tags
+//        List<TagVo> tags = articleParam.getTags();
+//        if (tags != null) {
+//            for (TagVo tag : tags) {
+//                ArticleTag articleTag = new ArticleTag();
+//                articleTag.setArticleId(article.getId());
+//                articleTag.setTagId(tag.getId());
+//                this.articleTagMapper.insert(articleTag);
+//            }
+//        }
+//        ArticleBody articleBody = new ArticleBody();
+//        articleBody.setContent(articleParam.getBody().getContent());
+//        articleBody.setContentHtml(articleParam.getBody().getContentHtml());
+//        articleBody.setArticleId(article.getId());
+//        articleBodyMapper.insert(articleBody);
+//
+//        article.setBodyId(articleBody.getId());
+//        articleMapper.updateById(article);
+//        ArticleVo articleVo = new ArticleVo();
+//        articleVo.setId(article.getId());
+//        return Result.success(articleVo);
+//    }
+    @Override
+    public Result publish(ArticleParam articleParam) {
+        /**
+         * 1. 发布文章，目的时构建Article对象
+         * 2. 作者id 当前的登录用户 使用TheadLocal
+         * 3. 标签  将标签加入到关联列表中
+         * 4. 内容存储
+         */
+
+        // 此接口要加入登录拦截当中
+        SysUser sysUser = UserThreadLocal.get();
+
+        Article article = new Article();
+        article.setAuthorId(sysUser.getId());
+
+        article.setWeight(Article.Article_Common);
+        article.setViewCounts(0);
+        article.setTitle(articleParam.getTitle());
+        article.setSummary(articleParam.getSummary());
+        article.setCommentCounts(0);
+        article.setCreateDate(System.currentTimeMillis());
+        article.setCategoryId(articleParam.getCategory().getId());
+        // 插入文章之后数据库会生成一个文章id，供后面使用
+        this.articleMapper.insert(article);
+
+        //tag
+        List<TagVo> tags = articleParam.getTags();
+        if (tags != null) {
+            for (TagVo tag : tags) {
+                Long articleId = article.getId();
+                ArticleTag articleTag = new ArticleTag();
+                articleTag.setTagId(tag.getId());
+                articleTag.setArticleId(articleId);
+                articleTagMapper.insert(articleTag);
+            }
+        }
+
+        //body
+        ArticleBody articleBody = new ArticleBody();
+        articleBody.setArticleId(article.getId());
+        articleBody.setContent(articleParam.getBody().getContent());
+        articleBody.setContentHtml(articleParam.getBody().getContentHtml());
+        articleBodyMapper.insert(articleBody);
+        //先插入数据库，才会产生id
+        article.setBodyId(articleBody.getId());
+
+        articleMapper.updateById(article);
+
+        HashMap<String, String> map = new HashMap<>();
+
+        map.put("id", article.getId().toString());
+
+        return Result.success(map);
+
+    }
 
     /**
      * 下面两个方法的功能是根据是否需要Tag和Author将Article对象转换成前端需要的ArticleVo对象
