@@ -20,4 +20,10 @@ public class CategoryController {
     public Result categories() {
         return categoryService.findAll();
     }
+
+    //categorys
+    @GetMapping("detail")
+    public Result categoriesDetail() {
+        return categoryService.findAllDetail();
+    }
 }
