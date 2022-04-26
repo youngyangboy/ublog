@@ -48,6 +48,18 @@ public class CategoryServiceImpl implements CategoryService {
         return Result.success(copyList(categories));
     }
 
+
+    /**
+     * 根据category的id查找分类的信息
+     * @param id
+     * @return
+     */
+    @Override
+    public Result findAllDetailById(Long id) {
+        Category category = categoryMapper.selectById(id);
+        return Result.success(category);
+    }
+
     private List<CategoryVo> copyList(List<Category> categories) {
         List<CategoryVo> categoryList = new ArrayList<>();
         for (Category category : categories) {

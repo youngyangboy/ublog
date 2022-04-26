@@ -69,6 +69,11 @@ public class ArticleServiceImpl implements ArticleService {
         //按照是否置顶进行排序，按照时间倒序进行排序
         queryWrapper.orderByDesc(Article::getWeight, Article::getCreateDate);
 
+        if (pageParams.getCategoryId() != null) {
+            // and category_id = #{categoryId}
+            queryWrapper.eq(Article::getCategoryId, pageParams.getCategoryId());
+        }
+
         List<Article> records = articleMapper.selectPage(page, queryWrapper).getRecords();
 
         List<ArticleVo> articleVoList = copyList(records, true, true);
