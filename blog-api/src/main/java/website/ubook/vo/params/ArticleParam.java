@@ -19,4 +19,5 @@ public class ArticleParam {
     private List<TagVo> tags;
 
     private String title;
+
 }

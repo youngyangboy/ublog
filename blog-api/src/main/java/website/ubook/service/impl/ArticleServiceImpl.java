@@ -1,6 +1,7 @@
 package website.ubook.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
@@ -53,53 +54,67 @@ public class ArticleServiceImpl implements ArticleService {
     @Resource
     private ArticleTagMapper articleTagMapper;
 
+
     /**
      * 分页查询article数据库，返回ArticleVo列表对象，封装在Result中
      *
      * @param pageParams {page,size}
      * @return Result
      */
+
     @Override
     public Result listArticle(PageParams pageParams) {
-
         Page<Article> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());
+        IPage<Article> articleIPage =
+                this.articleMapper.listArticle(page,
+                        pageParams.getCategoryId(),
+                        pageParams.getTagId(),
+                        pageParams.getYear(),
+                        pageParams.getMonth());
 
-        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
-
-        //按照是否置顶进行排序，按照时间倒序进行排序
-        queryWrapper.orderByDesc(Article::getWeight, Article::getCreateDate);
-
-        if (pageParams.getCategoryId() != null) {
-            // 相当于查询时添加了条件：and category_id = #{categoryId}
-            queryWrapper.eq(Article::getCategoryId, pageParams.getCategoryId());
-        }
-
-        List<Long> articleIdList = new ArrayList<>();
-        if (pageParams.getTagId() != null) {
-            /*  加入标签条件查询
-                Article表中并没有tag字段，并且一张文章有多个标签，是一对多的关系
-                ArticleTag表  article_id(1) : tag_id(n)
-             */
-            LambdaQueryWrapper<ArticleTag> articleTagLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            articleTagLambdaQueryWrapper.eq(ArticleTag::getTagId, pageParams.getTagId());
-            List<ArticleTag> articleTags = articleTagMapper.selectList(articleTagLambdaQueryWrapper);
-            for (ArticleTag articleTag : articleTags) {
-                articleIdList.add(articleTag.getArticleId());
-            }
-            if (articleIdList.size() > 0) {
-                //相当于添加查询条件：and id in（1，2，3）
-                queryWrapper.in(Article::getId, articleIdList);
-            }
-        }
-
-
-        List<Article> records = articleMapper.selectPage(page, queryWrapper).getRecords();
-
-        List<ArticleVo> articleVoList = copyList(records, true, true);
-
-        return Result.success(articleVoList);
-
+        return Result.success(copyList(articleIPage.getRecords(), true, true));
     }
+//    @Override
+//    public Result listArticle(PageParams pageParams) {
+//
+//        Page<Article> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());
+//
+//        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
+//
+//        //按照是否置顶进行排序，按照时间倒序进行排序
+//        queryWrapper.orderByDesc(Article::getWeight, Article::getCreateDate);
+//
+//        if (pageParams.getCategoryId() != null) {
+//            // 相当于查询时添加了条件：and category_id = #{categoryId}
+//            queryWrapper.eq(Article::getCategoryId, pageParams.getCategoryId());
+//        }
+//
+//        List<Long> articleIdList = new ArrayList<>();
+//        if (pageParams.getTagId() != null) {
+//            /*  加入标签条件查询
+//                Article表中并没有tag字段，并且一张文章有多个标签，是一对多的关系
+//                ArticleTag表  article_id(1) : tag_id(n)
+//             */
+//            LambdaQueryWrapper<ArticleTag> articleTagLambdaQueryWrapper = new LambdaQueryWrapper<>();
+//            articleTagLambdaQueryWrapper.eq(ArticleTag::getTagId, pageParams.getTagId());
+//            List<ArticleTag> articleTags = articleTagMapper.selectList(articleTagLambdaQueryWrapper);
+//            for (ArticleTag articleTag : articleTags) {
+//                articleIdList.add(articleTag.getArticleId());
+//            }
+//            if (articleIdList.size() > 0) {
+//                //相当于添加查询条件：and id in（1，2，3）
+//                queryWrapper.in(Article::getId, articleIdList);
+//            }
+//        }
+//
+//
+//        List<Article> records = articleMapper.selectPage(page, queryWrapper).getRecords();
+//
+//        List<ArticleVo> articleVoList = copyList(records, true, true);
+//
+//        return Result.success(articleVoList);
+//
+//    }
 
 
     /**
@@ -174,12 +189,7 @@ public class ArticleServiceImpl implements ArticleService {
         return Result.success(articleVo);
     }
 
-    /**
-     * 文章发布
-     *
-     * @param articleParam
-     * @return
-     */
+
 //    @Transactional
 //    public Result publish(ArticleParam articleParam) {
 //        SysUser sysUser = UserThreadLocal.get();
@@ -218,6 +228,14 @@ public class ArticleServiceImpl implements ArticleService {
 //        articleVo.setId(article.getId());
 //        return Result.success(articleVo);
 //    }
+
+    /**
+     * 文章发布
+     *
+     * @param articleParam
+     * @return
+     */
+    @Transactional
     @Override
     public Result publish(ArticleParam articleParam) {
         /**
