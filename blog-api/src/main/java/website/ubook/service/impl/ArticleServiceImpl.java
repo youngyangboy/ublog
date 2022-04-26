@@ -70,9 +70,28 @@ public class ArticleServiceImpl implements ArticleService {
         queryWrapper.orderByDesc(Article::getWeight, Article::getCreateDate);
 
         if (pageParams.getCategoryId() != null) {
-            // and category_id = #{categoryId}
+            // 相当于查询时添加了条件：and category_id = #{categoryId}
             queryWrapper.eq(Article::getCategoryId, pageParams.getCategoryId());
         }
+
+        List<Long> articleIdList = new ArrayList<>();
+        if (pageParams.getTagId() != null) {
+            /*  加入标签条件查询
+                Article表中并没有tag字段，并且一张文章有多个标签，是一对多的关系
+                ArticleTag表  article_id(1) : tag_id(n)
+             */
+            LambdaQueryWrapper<ArticleTag> articleTagLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            articleTagLambdaQueryWrapper.eq(ArticleTag::getTagId, pageParams.getTagId());
+            List<ArticleTag> articleTags = articleTagMapper.selectList(articleTagLambdaQueryWrapper);
+            for (ArticleTag articleTag : articleTags) {
+                articleIdList.add(articleTag.getArticleId());
+            }
+            if (articleIdList.size() > 0) {
+                //相当于添加查询条件：and id in（1，2，3）
+                queryWrapper.in(Article::getId, articleIdList);
+            }
+        }
+
 
         List<Article> records = articleMapper.selectPage(page, queryWrapper).getRecords();
 
