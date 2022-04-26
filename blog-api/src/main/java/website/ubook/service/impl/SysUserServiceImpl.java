@@ -2,6 +2,7 @@ package website.ubook.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import website.ubook.dao.mapper.SysUserMapper;
@@ -11,6 +12,7 @@ import website.ubook.service.SysUserService;
 import website.ubook.vo.ErrorCode;
 import website.ubook.vo.LoginUserVo;
 import website.ubook.vo.Result;
+import website.ubook.vo.UserVo;
 
 import javax.annotation.Resource;
 
@@ -23,6 +25,27 @@ public class SysUserServiceImpl implements SysUserService {
 
     @Autowired
     private LoginService loginService;
+
+
+    /**
+     * 通过id找到SysUser对象信息
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public UserVo findUserVoById(Long id) {
+        SysUser sysUser = sysUserMapper.selectById(id);
+        if (sysUser == null) {
+            sysUser = new SysUser();
+            sysUser.setId(1L);
+            sysUser.setAvatar("/static/img/logo.b3a48c0.png");
+            sysUser.setNickname("None");
+        }
+        UserVo userVo = new UserVo();
+        BeanUtils.copyProperties(sysUser, userVo);
+        return userVo;
+    }
 
 
     /**

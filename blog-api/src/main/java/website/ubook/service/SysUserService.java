@@ -2,8 +2,12 @@ package website.ubook.service;
 
 import website.ubook.dao.pojo.SysUser;
 import website.ubook.vo.Result;
+import website.ubook.vo.UserVo;
 
 public interface SysUserService {
+
+    UserVo findUserVoById(Long id);
+
 
     SysUser findUserById(Long id);
 
