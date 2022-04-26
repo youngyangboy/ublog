@@ -24,7 +24,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         //拦截test接口，后续实际遇到再配置为真正的拦截接口
         registry.addInterceptor(loginInterceptor)
-                .addPathPatterns("/test");
+                .addPathPatterns("/test")
+                .addPathPatterns("/comments/create/change");
     }
 
 }

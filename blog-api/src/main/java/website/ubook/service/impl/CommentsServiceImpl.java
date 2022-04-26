@@ -5,11 +5,14 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import website.ubook.dao.mapper.CommentMapper;
 import website.ubook.dao.pojo.Comment;
+import website.ubook.dao.pojo.SysUser;
 import website.ubook.service.CommentsService;
 import website.ubook.service.SysUserService;
+import website.ubook.utils.UserThreadLocal;
 import website.ubook.vo.CommentVo;
 import website.ubook.vo.Result;
 import website.ubook.vo.UserVo;
+import website.ubook.vo.params.CommentParam;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -41,6 +44,27 @@ public class CommentsServiceImpl implements CommentsService {
         List<Comment> comments = commentMapper.selectList(queryWrapper);
         List<CommentVo> commentVoList = copyList(comments);
         return Result.success(commentVoList);
+    }
+
+    @Override
+    public Result comment(CommentParam commentParam) {
+        SysUser sysUser = UserThreadLocal.get();
+        Comment comment = new Comment();
+        comment.setArticleId(commentParam.getArticleId());
+        comment.setAuthorId(sysUser.getId());
+        comment.setContent(commentParam.getContent());
+        comment.setCreateDate(System.currentTimeMillis());
+        Long parent = commentParam.getParent();
+        if (parent == null || parent == 0) {
+            comment.setLevel(1);
+        }else{
+            comment.setLevel(2);
+        }
+        comment.setParentId(parent == null ? 0 : parent);
+        Long toUserId = commentParam.getToUserId();
+        comment.setToUid(toUserId == null ? 0 : toUserId);
+        this.commentMapper.insert(comment);
+        return Result.success(null);
     }
 
     private List<CommentVo> copyList(List<Comment> comments) {

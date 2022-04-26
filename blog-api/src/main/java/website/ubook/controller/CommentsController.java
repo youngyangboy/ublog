@@ -1,12 +1,10 @@
 package website.ubook.controller;
 
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import website.ubook.service.CommentsService;
 import website.ubook.vo.Result;
+import website.ubook.vo.params.CommentParam;
 
 import javax.annotation.Resource;
 
@@ -24,4 +22,8 @@ public class CommentsController {
         return commentsService.commentsByArticleId(id);
     }
 
+    @PostMapping("create/change")
+    public Result comment(@RequestBody CommentParam commentParam) {
+        return commentsService.comment(commentParam);
+    }
 }
