@@ -4,17 +4,13 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.joda.time.DateTime;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import website.ubook.dao.dos.Archives;
 import website.ubook.dao.mapper.ArticleBodyMapper;
 import website.ubook.dao.mapper.ArticleMapper;
 import website.ubook.dao.pojo.Article;
 import website.ubook.dao.pojo.ArticleBody;
-import website.ubook.service.ArticleService;
-import website.ubook.service.CategoryService;
-import website.ubook.service.SysUserService;
-import website.ubook.service.TagService;
+import website.ubook.service.*;
 import website.ubook.vo.ArticleBodyVo;
 import website.ubook.vo.ArticleVo;
 import website.ubook.vo.Result;
@@ -36,6 +32,15 @@ public class ArticleServiceImpl implements ArticleService {
 
     @Resource
     private SysUserService sysUserService;
+
+    @Resource
+    private CategoryService categoryService;
+
+    @Resource
+    private ArticleBodyMapper articleBodyMapper;
+
+    @Resource
+    private ThreadService threadService;
 
     /**
      * 分页查询article数据库，返回ArticleVo列表对象，封装在Result中
@@ -121,7 +126,16 @@ public class ArticleServiceImpl implements ArticleService {
          */
         Article article = this.articleMapper.selectById(articleId);
 
-        ArticleVo articleVo = copy(article, true, true,true,true);
+        ArticleVo articleVo = copy(article, true, true, true, true);
+
+        /*
+        查看完文章，新增阅读数量存在的问题：
+        1. 查看完文章后，本应该直接返回数据，这是需要做一个更新操作，更新时加写锁，阻塞其他的读操作，性能会比较低
+        2. 更新增加了此次接口的耗时，如果一旦更新出问题，不能影响查看文章的操作
+        解决方法：可以使用线程池，把更新操作扔到线程池中去执行，这样就和主线程不相关了
+         */
+        threadService.updateArticleViewCount(articleMapper,article);
+
         return Result.success(articleVo);
     }
 
@@ -150,9 +164,6 @@ public class ArticleServiceImpl implements ArticleService {
         return articleVoList;
     }
 
-
-    @Autowired
-    private CategoryService categoryService;
 
     private ArticleVo copy(Article article, boolean isTag, boolean isAuthor, boolean isBody, boolean isCategory) {
 
@@ -183,15 +194,15 @@ public class ArticleServiceImpl implements ArticleService {
         return articleVo;
     }
 
-    @Resource
-    private ArticleBodyMapper articleBodyMapper;
-    //
 
     private ArticleBodyVo findArticleBodyById(Long bodyId) {
+
 
         ArticleBody articleBody = articleBodyMapper.selectById(bodyId);
         ArticleBodyVo articleBodyVo = new ArticleBodyVo();
         articleBodyVo.setContent(articleBody.getContent());
+
+
         return articleBodyVo;
     }
 
