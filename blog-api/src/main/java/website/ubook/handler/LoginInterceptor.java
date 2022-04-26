@@ -4,11 +4,13 @@ import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import website.ubook.dao.pojo.SysUser;
 import website.ubook.service.LoginService;
+import website.ubook.utils.UserThreadLocal;
 import website.ubook.vo.ErrorCode;
 import website.ubook.vo.Result;
 
@@ -66,6 +68,15 @@ public class LoginInterceptor implements HandlerInterceptor {
         //登录验证成功，放行
 
         //希望在controller中直接获取用户信息 怎么获取？
+
+        UserThreadLocal.put(sysUser);
+
         return true;
     }
+    @Override
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, @Nullable Exception ex) throws Exception {
+        //如果不删除TreadLocal中用完的信息，会有内存泄露的风险
+        UserThreadLocal.remove();
+    }
+
 }

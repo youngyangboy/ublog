@@ -1,9 +1,6 @@
 package website.ubook.controller;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import website.ubook.service.ArticleService;
 import website.ubook.vo.Result;
 import website.ubook.vo.params.PageParams;
@@ -57,5 +54,12 @@ public class ArticleController {
     @PostMapping("listArchives")
     public Result listArchives() {
         return articleService.listArchives();
+    }
+
+
+    @PostMapping("view/{id}")
+    public Result findArticleById(@PathVariable("id") Long articleId) {
+        return articleService.findArticleById(articleId);
+
     }
 }
