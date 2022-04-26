@@ -1,6 +1,7 @@
 package website.ubook.controller;
 
 import org.springframework.web.bind.annotation.*;
+import website.ubook.common.aop.LogAnnotation;
 import website.ubook.service.ArticleService;
 import website.ubook.vo.Result;
 import website.ubook.vo.params.ArticleParam;
@@ -20,6 +21,8 @@ public class ArticleController {
      * @param pageParams
      * @return
      */
+    // 加上此注解，表示要对此接口记录日志
+    @LogAnnotation(module="文章",operator="获取文章列表")
     @PostMapping()
     public Result listArticle(@RequestBody PageParams pageParams) {
         return articleService.listArticle(pageParams);
@@ -52,6 +55,7 @@ public class ArticleController {
      * 文章归档
      * @return
      */
+
     @PostMapping("listArchives")
     public Result listArchives() {
         return articleService.listArchives();
