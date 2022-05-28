@@ -74,47 +74,6 @@ public class ArticleServiceImpl implements ArticleService {
 
         return Result.success(copyList(articleIPage.getRecords(), true, true));
     }
-//    @Override
-//    public Result listArticle(PageParams pageParams) {
-//
-//        Page<Article> page = new Page<>(pageParams.getPage(), pageParams.getPageSize());
-//
-//        LambdaQueryWrapper<Article> queryWrapper = new LambdaQueryWrapper<>();
-//
-//        //按照是否置顶进行排序，按照时间倒序进行排序
-//        queryWrapper.orderByDesc(Article::getWeight, Article::getCreateDate);
-//
-//        if (pageParams.getCategoryId() != null) {
-//            // 相当于查询时添加了条件：and category_id = #{categoryId}
-//            queryWrapper.eq(Article::getCategoryId, pageParams.getCategoryId());
-//        }
-//
-//        List<Long> articleIdList = new ArrayList<>();
-//        if (pageParams.getTagId() != null) {
-//            /*  加入标签条件查询
-//                Article表中并没有tag字段，并且一张文章有多个标签，是一对多的关系
-//                ArticleTag表  article_id(1) : tag_id(n)
-//             */
-//            LambdaQueryWrapper<ArticleTag> articleTagLambdaQueryWrapper = new LambdaQueryWrapper<>();
-//            articleTagLambdaQueryWrapper.eq(ArticleTag::getTagId, pageParams.getTagId());
-//            List<ArticleTag> articleTags = articleTagMapper.selectList(articleTagLambdaQueryWrapper);
-//            for (ArticleTag articleTag : articleTags) {
-//                articleIdList.add(articleTag.getArticleId());
-//            }
-//            if (articleIdList.size() > 0) {
-//                //相当于添加查询条件：and id in（1，2，3）
-//                queryWrapper.in(Article::getId, articleIdList);
-//            }
-//        }
-//
-//
-//        List<Article> records = articleMapper.selectPage(page, queryWrapper).getRecords();
-//
-//        List<ArticleVo> articleVoList = copyList(records, true, true);
-//
-//        return Result.success(articleVoList);
-//
-//    }
 
 
     /**
@@ -190,45 +149,6 @@ public class ArticleServiceImpl implements ArticleService {
     }
 
 
-//    @Transactional
-//    public Result publish(ArticleParam articleParam) {
-//        SysUser sysUser = UserThreadLocal.get();
-//
-//        Article article = new Article();
-//        article.setAuthorId(sysUser.getId());
-//        article.setCategoryId(articleParam.getCategory().getId());
-//        article.setCreateDate(System.currentTimeMillis());
-//        article.setCommentCounts(0);
-//        article.setSummary(articleParam.getSummary());
-//        article.setTitle(articleParam.getTitle());
-//        article.setViewCounts(0);
-//        article.setWeight(Article.Article_Common);
-//        article.setBodyId(-1L);
-//        this.articleMapper.insert(article);
-//
-//        //tags
-//        List<TagVo> tags = articleParam.getTags();
-//        if (tags != null) {
-//            for (TagVo tag : tags) {
-//                ArticleTag articleTag = new ArticleTag();
-//                articleTag.setArticleId(article.getId());
-//                articleTag.setTagId(tag.getId());
-//                this.articleTagMapper.insert(articleTag);
-//            }
-//        }
-//        ArticleBody articleBody = new ArticleBody();
-//        articleBody.setContent(articleParam.getBody().getContent());
-//        articleBody.setContentHtml(articleParam.getBody().getContentHtml());
-//        articleBody.setArticleId(article.getId());
-//        articleBodyMapper.insert(articleBody);
-//
-//        article.setBodyId(articleBody.getId());
-//        articleMapper.updateById(article);
-//        ArticleVo articleVo = new ArticleVo();
-//        articleVo.setId(article.getId());
-//        return Result.success(articleVo);
-//    }
-
     /**
      * 文章发布
      *
@@ -257,7 +177,7 @@ public class ArticleServiceImpl implements ArticleService {
         article.setSummary(articleParam.getSummary());
         article.setCommentCounts(0);
         article.setCreateDate(System.currentTimeMillis());
-        article.setCategoryId(articleParam.getCategory().getId());
+        article.setCategoryId(Long.parseLong(articleParam.getCategory().getId()));
         // 插入文章之后数据库会生成一个文章id，供后面使用
         this.articleMapper.insert(article);
 
@@ -267,7 +187,7 @@ public class ArticleServiceImpl implements ArticleService {
             for (TagVo tag : tags) {
                 Long articleId = article.getId();
                 ArticleTag articleTag = new ArticleTag();
-                articleTag.setTagId(tag.getId());
+                articleTag.setTagId(Long.parseLong(tag.getId()));
                 articleTag.setArticleId(articleId);
                 articleTagMapper.insert(articleTag);
             }
@@ -320,6 +240,7 @@ public class ArticleServiceImpl implements ArticleService {
     private ArticleVo copy(Article article, boolean isTag, boolean isAuthor, boolean isBody, boolean isCategory) {
 
         ArticleVo articleVo = new ArticleVo();
+        articleVo.setId(String.valueOf(article.getId()));
         BeanUtils.copyProperties(article, articleVo);
         articleVo.setCreateDate(new DateTime(article.getCreateDate()).toString("yyyy-MM-dd HH:mm"));
         //并不是所有的接口都需要【标签】、【作者】
